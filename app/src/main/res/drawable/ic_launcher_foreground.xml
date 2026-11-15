@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer Prism Broadcast Signal Frame -->
+    <path
+        android:fillColor="#00E5A3"
+        android:pathData="M54,24 L82,40 L82,68 L54,84 L26,68 L26,40 Z" />
+    <!-- Inner Dark Obsidian Cutout -->
+    <path
+        android:fillColor="#0B161B"
+        android:pathData="M54,31 L75,43 L75,65 L54,77 L33,65 L33,43 Z" />
+    <!-- Bold Centered Play Prism -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,41 L68,54 L46,67 Z" />
+    <!-- Signal Pulse Dot -->
+    <path
+        android:fillColor="#00E5A3"
+        android:pathData="M54,35 A3,3 0 1,1 53.9,35 Z" />
+</vector>

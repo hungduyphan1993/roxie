@@ -1,0 +1,6 @@
+{
+  "name": "PrismCast",
+  "description": "Whitelabel live broadcast & HLS streaming player with a built-in multi-mirror stream enumerator, multi-phase domain pool resolver, Quad MultiView player, host health matrix, and rotation tracker.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

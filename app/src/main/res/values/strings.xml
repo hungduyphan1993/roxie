@@ -1,0 +1,37 @@
+<resources>
+    <string name="app_name">PrismCast</string>
+
+    <!-- Navigation -->
+    <string name="nav_live_tv">Live Now</string>
+    <string name="nav_schedule">Schedule</string>
+    <string name="nav_multiview">MultiView</string>
+
+    <!-- Live Hub & Schedule -->
+    <string name="action_refresh">Refresh</string>
+    <string name="action_refreshing">Updating…</string>
+    <string name="search_placeholder">Search channels, teams, or sports…</string>
+    <string name="section_featured_live">On Air Now</string>
+    <string name="section_favorites">Favorites</string>
+    <string name="section_upcoming_events">Upcoming Broadcasts</string>
+    <string name="filter_all_sports">All Sports</string>
+    <string name="filter_live_now">Live Only</string>
+    <string name="empty_live_title">No Broadcasts On Air Right Now</string>
+    <string name="empty_live_subtitle">Select Refresh to scan for newly started live broadcasts or check the Schedule tab for upcoming matchups.</string>
+    <string name="btn_watch_live">Watch Live</string>
+    <string name="btn_tune_in">Tune In</string>
+    <string name="btn_favorite">Toggle Favorite</string>
+
+    <!-- Player & MultiView -->
+    <string name="player_live_badge">LIVE</string>
+    <string name="player_pip">Picture-in-Picture</string>
+    <string name="player_fullscreen">Fullscreen</string>
+    <string name="player_close">Close Player</string>
+    <string name="player_mute_toggle">Mute or Unmute</string>
+    <string name="player_play_pause">Play or Pause</string>
+    <string name="player_switch_feed">Switch Broadcast Feed</string>
+    <string name="multiview_title">MultiView Broadcast Wall</string>
+    <string name="multiview_subtitle">Watch up to 4 live broadcasts at once. Select any screen to listen to its audio.</string>
+    <string name="multiview_add_slot">Select Channel</string>
+    <string name="multiview_autofill">Fill Live</string>
+    <string name="multiview_clear_all">Clear All</string>
+</resources>
