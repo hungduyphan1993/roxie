@@ -338,6 +338,7 @@ class PrismCastViewModel(
             stream.candidates.forEach { if (it !in this) add(it) }
         }
         val sportDisplay = stream.ref.displaySport
+        val baseHeaders = whitelabelConfig.buildStreamRequestHeaders(_uiState.value.catalog.activeMirror)
         val feed = ActivePlayableFeed(
             id = stream.ref.key.ifEmpty { url },
             title = stream.ref.displayTitle,
@@ -350,7 +351,7 @@ class PrismCastViewModel(
             eventRoute = eventRoute,
             streamPath = stream.ref.path,
             subdomain = stream.ref.subdomain,
-            customHeaders = stream.ref.customHeaders
+            customHeaders = baseHeaders + stream.ref.customHeaders
         )
         startPrimaryPlayback(feed, openFullscreen = openFullscreen)
     }
@@ -376,7 +377,8 @@ class PrismCastViewModel(
             candidateUrls = listOf(saved.streamUrl),
             category = category,
             streamPath = saved.streamPath,
-            subdomain = saved.subdomain
+            subdomain = saved.subdomain,
+            customHeaders = whitelabelConfig.buildStreamRequestHeaders(_uiState.value.catalog.activeMirror)
         )
         startPrimaryPlayback(feed, openFullscreen = openFullscreen)
     }
@@ -705,6 +707,7 @@ class PrismCastViewModel(
     }
 
     fun autoFillMultiViewFromLive(silentIfEmpty: Boolean = false) {
+        val baseHeaders = whitelabelConfig.buildStreamRequestHeaders(_uiState.value.catalog.activeMirror)
         val liveFeeds = _uiState.value.resolvedStreams
             .filter { it.liveUrl != null }
             .sortedByDescending { it.viewers }
@@ -720,7 +723,7 @@ class PrismCastViewModel(
                     viewers = stream.viewers,
                     streamPath = stream.ref.path,
                     subdomain = stream.ref.subdomain,
-                    customHeaders = stream.ref.customHeaders
+                    customHeaders = baseHeaders + stream.ref.customHeaders
                 )
             }
         val savedFeeds = savedStreams.value.map { s ->
@@ -733,7 +736,8 @@ class PrismCastViewModel(
                 candidateUrls = listOf(s.streamUrl),
                 category = cat,
                 streamPath = s.streamPath,
-                subdomain = s.subdomain
+                subdomain = s.subdomain,
+                customHeaders = baseHeaders
             )
         }
         val combined = (liveFeeds + savedFeeds).distinctBy { it.primaryUrl }.take(4)

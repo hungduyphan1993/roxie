@@ -96,6 +96,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.TrackSelectionOverride
@@ -172,9 +173,12 @@ fun BroadcastStagePlayer(
         hudActivityTick++
     }
 
-    val exoPlayer = remember(whitelabelConfig.customUserAgent, feed.customHeaders) {
-        val effectiveUa = feed.customHeaders["User-Agent"] ?: whitelabelConfig.customUserAgent
-        val extraHeaders = feed.customHeaders.filterKeys { !it.equals("User-Agent", ignoreCase = true) }
+    val exoPlayer = remember(whitelabelConfig.customUserAgent, whitelabelConfig.mirrors, feed.customHeaders) {
+        val effectiveUa = whitelabelConfig.customUserAgent
+        val baseHeaders = whitelabelConfig.buildStreamRequestHeaders()
+        val extraHeaders = baseHeaders +
+            feed.customHeaders.filterKeys { !it.equals("User-Agent", ignoreCase = true) } +
+            ("User-Agent" to effectiveUa)
         val httpFactory = DefaultHttpDataSource.Factory()
             .setUserAgent(effectiveUa)
             .setDefaultRequestProperties(extraHeaders)
@@ -235,15 +239,20 @@ fun BroadcastStagePlayer(
             .buildUpon()
             .clearOverridesOfType(C.TRACK_TYPE_VIDEO)
             .build()
-        val mediaItem = MediaItem.Builder()
+        val mediaItemBuilder = MediaItem.Builder()
             .setUri(feed.activeUrl)
             .setLiveConfiguration(
                 MediaItem.LiveConfiguration.Builder()
                     .setMaxPlaybackSpeed(1.04f)
                     .build()
             )
-            .build()
-        exoPlayer.setMediaItem(mediaItem, true)
+        when {
+            feed.activeUrl.contains(".m3u8", ignoreCase = true) ->
+                mediaItemBuilder.setMimeType(MimeTypes.APPLICATION_M3U8)
+            feed.activeUrl.contains(".mpd", ignoreCase = true) ->
+                mediaItemBuilder.setMimeType(MimeTypes.APPLICATION_MPD)
+        }
+        exoPlayer.setMediaItem(mediaItemBuilder.build(), true)
         exoPlayer.prepare()
         exoPlayer.playWhenReady = !userPaused
     }
@@ -1277,8 +1286,11 @@ fun MultiViewTilePlayer(
     val activeUrl = feed.candidateUrls.getOrElse(candidateIdx) { feed.primaryUrl }
 
     val exoPlayer = remember(userAgent, feed.customHeaders) {
-        val effectiveUa = feed.customHeaders["User-Agent"] ?: userAgent
-        val extraHeaders = feed.customHeaders.filterKeys { !it.equals("User-Agent", ignoreCase = true) }
+        val effectiveUa = userAgent
+        val baseHeaders = WhitelabelConfig.defaultStreamHeaders(userAgent = effectiveUa)
+        val extraHeaders = baseHeaders +
+            feed.customHeaders.filterKeys { !it.equals("User-Agent", ignoreCase = true) } +
+            ("User-Agent" to effectiveUa)
         val httpFactory = DefaultHttpDataSource.Factory()
             .setUserAgent(effectiveUa)
             .setDefaultRequestProperties(extraHeaders)
@@ -1326,15 +1338,20 @@ fun MultiViewTilePlayer(
 
     LaunchedEffect(activeUrl, feed.retryNonce, localRetryNonce, exoPlayer) {
         isBuffering = true
-        val mediaItem = MediaItem.Builder()
+        val mediaItemBuilder = MediaItem.Builder()
             .setUri(activeUrl)
             .setLiveConfiguration(
                 MediaItem.LiveConfiguration.Builder()
                     .setMaxPlaybackSpeed(1.04f)
                     .build()
             )
-            .build()
-        exoPlayer.setMediaItem(mediaItem, true)
+        when {
+            activeUrl.contains(".m3u8", ignoreCase = true) ->
+                mediaItemBuilder.setMimeType(MimeTypes.APPLICATION_M3U8)
+            activeUrl.contains(".mpd", ignoreCase = true) ->
+                mediaItemBuilder.setMimeType(MimeTypes.APPLICATION_MPD)
+        }
+        exoPlayer.setMediaItem(mediaItemBuilder.build(), true)
         exoPlayer.prepare()
         exoPlayer.playWhenReady = true
     }

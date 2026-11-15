@@ -251,6 +251,7 @@ fun LiveHubScreen(
                     onToggleFavorite = { onToggleFavorite(stream) },
                     onSendMultiView = {
                         val url = stream.liveUrl ?: return@BroadcastChannelCard
+                        val baseHeaders = whitelabelConfig.buildStreamRequestHeaders(uiState.catalog.activeMirror)
                         onSendStreamToMultiView(
                             ActivePlayableFeed(
                                 id = stream.ref.key.ifEmpty { url },
@@ -260,7 +261,9 @@ fun LiveHubScreen(
                                 candidateUrls = (listOf(url) + stream.candidates).distinct(),
                                 category = stream.ref.displaySport,
                                 viewers = stream.viewers,
-                                customHeaders = stream.ref.customHeaders
+                                streamPath = stream.ref.path,
+                                subdomain = stream.ref.subdomain,
+                                customHeaders = baseHeaders + stream.ref.customHeaders
                             )
                         )
                     }

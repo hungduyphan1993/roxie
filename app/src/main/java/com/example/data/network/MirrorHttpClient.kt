@@ -32,9 +32,29 @@ class MirrorHttpClient(
         maxRequestsPerHost = 16
     }
 
+    private val browserHeaderInterceptor = okhttp3.Interceptor { chain ->
+        val original = chain.request()
+        val builder = original.newBuilder()
+            .header("User-Agent", userAgent)
+        if (original.header("Accept") == null) {
+            builder.header("Accept", "*/*")
+        }
+        if (original.header("Accept-Language") == null) {
+            builder.header("Accept-Language", "en-US,en;q=0.9")
+        }
+        val defaultHeaders = buildHeadersForUrl(original.url.toString())
+        for ((key, value) in defaultHeaders) {
+            if (!key.equals("User-Agent", ignoreCase = true) && original.header(key) == null) {
+                builder.header(key, value)
+            }
+        }
+        chain.proceed(builder.build())
+    }
+
     private val routeClient: OkHttpClient = OkHttpClient.Builder()
         .connectionPool(sharedPool)
         .dispatcher(sharedDispatcher)
+        .addNetworkInterceptor(browserHeaderInterceptor)
         .connectTimeout(8, TimeUnit.SECONDS)
         .readTimeout(pageTimeoutSec, TimeUnit.SECONDS)
         .followRedirects(true)
@@ -45,6 +65,7 @@ class MirrorHttpClient(
     private val probeClient: OkHttpClient = OkHttpClient.Builder()
         .connectionPool(sharedPool)
         .dispatcher(sharedDispatcher)
+        .addNetworkInterceptor(browserHeaderInterceptor)
         .connectTimeout(4, TimeUnit.SECONDS)
         .readTimeout(7, TimeUnit.SECONDS)
         .followRedirects(true)
@@ -68,6 +89,25 @@ class MirrorHttpClient(
         }
     }
 
+    fun buildHeadersForUrl(url: String): Map<String, String> {
+        val matchingMirror = mirrors.firstOrNull { mirror ->
+            val clean = mirror.trimEnd('/')
+            url.equals(clean, ignoreCase = true) || url.startsWith("$clean/", ignoreCase = true)
+        }
+        val originMirror = (matchingMirror ?: preferredMirror).trimEnd('/')
+        val isSameOrigin = matchingMirror != null
+        return mapOf(
+            "User-Agent" to userAgent,
+            "Accept" to "*/*",
+            "Accept-Language" to "en-US,en;q=0.9",
+            "Origin" to originMirror,
+            "Referer" to "$originMirror/",
+            "Sec-Fetch-Site" to if (isSameOrigin) "same-origin" else "cross-site",
+            "Sec-Fetch-Mode" to "cors",
+            "Sec-Fetch-Dest" to "empty"
+        )
+    }
+
     fun getText(url: String, timeoutSec: Long = pageTimeoutSec): String? {
         val client = if (timeoutSec == pageTimeoutSec) {
             routeClient
@@ -77,13 +117,11 @@ class MirrorHttpClient(
                 .connectTimeout(timeoutSec.coerceAtMost(6L).coerceAtLeast(2L), TimeUnit.SECONDS)
                 .build()
         }
-        val request = Request.Builder()
+        val reqBuilder = Request.Builder()
             .url(url)
-            .header("User-Agent", userAgent)
-            .header("Accept", "*/*")
-            .header("Accept-Language", "en-US,en;q=0.9")
             .get()
-            .build()
+        buildHeadersForUrl(url).forEach { (k, v) -> reqBuilder.header(k, v) }
+        val request = reqBuilder.build()
 
         return try {
             client.newCall(request).execute().use { response ->
@@ -147,10 +185,8 @@ class MirrorHttpClient(
 
         val reqBuilder = Request.Builder()
             .url(url)
-            .header("User-Agent", headers["User-Agent"] ?: userAgent)
-            .header("Accept", "*/*")
-            .header("Accept-Language", "en-US,en;q=0.9")
             .get()
+        buildHeadersForUrl(url).forEach { (k, v) -> reqBuilder.header(k, v) }
         headers.forEach { (k, v) ->
             if (!k.equals("User-Agent", ignoreCase = true) && v.isNotBlank()) {
                 reqBuilder.header(k, v)

@@ -60,6 +60,32 @@ class ExampleUnitTest {
         assertTrue(cfg.mirrors.isNotEmpty())
         assertTrue(cfg.extraSubdomains.contains("admin2"))
         assertTrue(cfg.autoFailover)
+        assertEquals(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36",
+            cfg.customUserAgent
+        )
+
+        val streamHeaders = cfg.buildStreamRequestHeaders("https://roxiestreams.info")
+        assertEquals(cfg.customUserAgent, streamHeaders["User-Agent"])
+        assertEquals("https://roxiestreams.info", streamHeaders["Origin"])
+        assertEquals("https://roxiestreams.info/", streamHeaders["Referer"])
+        assertEquals("cross-site", streamHeaders["Sec-Fetch-Site"])
+        assertEquals("cors", streamHeaders["Sec-Fetch-Mode"])
+        assertEquals("empty", streamHeaders["Sec-Fetch-Dest"])
+
+        val httpClient = com.example.data.network.MirrorHttpClient(
+            mirrors = cfg.mirrors,
+            userAgent = cfg.customUserAgent
+        )
+        val edgeHeaders = httpClient.buildHeadersForUrl("https://admin2.formaturamaxi.com.br/ncaa3.m3u8")
+        assertEquals("https://roxiestreams.info", edgeHeaders["Origin"])
+        assertEquals("https://roxiestreams.info/", edgeHeaders["Referer"])
+        assertEquals("cross-site", edgeHeaders["Sec-Fetch-Site"])
+
+        val sameSiteHeaders = httpClient.buildHeadersForUrl("https://roxiestreams.info/multiview")
+        assertEquals("https://roxiestreams.info", sameSiteHeaders["Origin"])
+        assertEquals("https://roxiestreams.info/", sameSiteHeaders["Referer"])
+        assertEquals("same-origin", sameSiteHeaders["Sec-Fetch-Site"])
     }
 
     @Test

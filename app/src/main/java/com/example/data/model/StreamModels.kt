@@ -286,9 +286,38 @@ data class WhitelabelConfig(
             return result
         }
 
+    fun buildStreamRequestHeaders(activeMirror: String? = null): Map<String, String> {
+        val origin = activeMirror?.trim()?.trimEnd('/')
+            ?.takeIf { it.startsWith("http://") || it.startsWith("https://") }
+            ?: mirrors.firstOrNull()?.trim()?.trimEnd('/')
+            ?: DEFAULT_MIRROR_ORIGIN
+        return defaultStreamHeaders(
+            userAgent = customUserAgent,
+            originMirror = origin
+        )
+    }
+
     companion object {
+        const val DEFAULT_MIRROR_ORIGIN = "https://roxiestreams.info"
         const val DEFAULT_BROWSER_USER_AGENT =
-            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36"
+
+        fun defaultStreamHeaders(
+            userAgent: String = DEFAULT_BROWSER_USER_AGENT,
+            originMirror: String = DEFAULT_MIRROR_ORIGIN
+        ): Map<String, String> {
+            val cleanOrigin = originMirror.trim().trimEnd('/').ifEmpty { DEFAULT_MIRROR_ORIGIN }
+            return mapOf(
+                "User-Agent" to userAgent,
+                "Accept" to "*/*",
+                "Accept-Language" to "en-US,en;q=0.9",
+                "Origin" to cleanOrigin,
+                "Referer" to "$cleanOrigin/",
+                "Sec-Fetch-Site" to "cross-site",
+                "Sec-Fetch-Mode" to "cors",
+                "Sec-Fetch-Dest" to "empty"
+            )
+        }
 
         fun fromEnvBuildConfig(): WhitelabelConfig {
             val brand = BuildConfig.BRAND_NAME.trim().ifEmpty { "PrismCast" }

@@ -41,6 +41,7 @@ import com.example.R
 import com.example.data.local.SavedStreamEntity
 import com.example.data.model.ActivePlayableFeed
 import com.example.data.model.SportDisplayFormatter
+import com.example.data.model.WhitelabelConfig
 import com.example.ui.PrismUiState
 import com.example.ui.adaptive.AdaptiveLayoutSpec
 import com.example.ui.adaptive.adaptiveInteractiveSurface
@@ -64,7 +65,11 @@ fun MultiViewScreen(
 ) {
     var pickingForSlot by remember { mutableStateOf<Int?>(null) }
 
-    val availableFeeds = remember(uiState.resolvedStreams, savedStreams) {
+    val availableFeeds = remember(uiState.resolvedStreams, uiState.catalog.activeMirror, userAgent, savedStreams) {
+        val baseHeaders = WhitelabelConfig.defaultStreamHeaders(
+            userAgent = userAgent,
+            originMirror = uiState.catalog.activeMirror.ifBlank { WhitelabelConfig.DEFAULT_MIRROR_ORIGIN }
+        )
         val fromLive = uiState.resolvedStreams.filter { it.liveUrl != null }.map { s ->
             val url = s.liveUrl.orEmpty()
             ActivePlayableFeed(
@@ -75,7 +80,9 @@ fun MultiViewScreen(
                 candidateUrls = (listOf(url) + s.candidates).distinct(),
                 category = s.ref.displaySport,
                 viewers = s.viewers,
-                customHeaders = s.ref.customHeaders
+                streamPath = s.ref.path,
+                subdomain = s.ref.subdomain,
+                customHeaders = baseHeaders + s.ref.customHeaders
             )
         }
         val fromSaved = savedStreams.map { ch ->
@@ -86,7 +93,10 @@ fun MultiViewScreen(
                 subtitle = cat,
                 primaryUrl = ch.streamUrl,
                 candidateUrls = listOf(ch.streamUrl),
-                category = cat
+                category = cat,
+                streamPath = ch.streamPath,
+                subdomain = ch.subdomain,
+                customHeaders = baseHeaders
             )
         }
         (fromLive + fromSaved).distinctBy { it.primaryUrl }
