@@ -35,7 +35,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,6 +63,7 @@ import com.example.data.model.StreamEvent
 import com.example.data.model.WhitelabelConfig
 import com.example.ui.PrismUiState
 import com.example.ui.adaptive.AdaptiveLayoutSpec
+import com.example.ui.adaptive.DpadFriendlySearchBar
 import com.example.ui.adaptive.adaptiveInteractiveSurface
 import com.example.ui.theme.StatusLiveGreen
 import java.text.NumberFormat
@@ -157,29 +157,13 @@ fun LiveHubScreen(
             }
         }
 
-        // 2. Collapsible Search Bar
+        // 2. Collapsible Search Bar (D-Pad safe: requires OK / tap before opening keyboard)
         if (showSearchField || uiState.searchQuery.isNotEmpty() || layoutSpec.isTv) {
             item(span = { GridItemSpan(maxLineSpan) }) {
-                OutlinedTextField(
+                DpadFriendlySearchBar(
                     value = uiState.searchQuery,
                     onValueChange = onSearchQueryChange,
-                    placeholder = {
-                        Text(
-                            text = stringResource(R.string.search_placeholder),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            imageVector = Icons.Filled.Search,
-                            contentDescription = "Search"
-                        )
-                    },
-                    singleLine = true,
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("hub_search_input")
+                    testTag = "hub_search_input"
                 )
             }
         }

@@ -210,4 +210,38 @@ class ExampleRobolectricTest {
 
         viewModel.closePrimaryPlayer()
     }
+
+    @Test
+    fun `search bar stays passive on dpad focus and only activates text input when ok is pressed`() {
+        val app = ApplicationProvider.getApplicationContext<Application>()
+        val viewModel = PrismCastViewModel(app)
+        viewModel.seedCatalogForTest(Catalog(), emptyList())
+
+        composeTestRule.setContent {
+            PrismCastApp(viewModel = viewModel)
+        }
+        composeTestRule.waitForIdle()
+
+        // Navigate to Schedule tab where search bar is visible
+        composeTestRule.onNodeWithTag("nav_tab_schedule").performClick()
+        composeTestRule.waitForIdle()
+
+        // Passive search bar is displayed, while active TextField is NOT mounted
+        composeTestRule.onNodeWithTag("schedule_search_input").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("schedule_search_input_active_field").assertDoesNotExist()
+
+        // Pressing OK / clicking on the search bar activates the editable TextField
+        composeTestRule.onNodeWithTag("schedule_search_input").performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag("schedule_search_input_active_field").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("schedule_search_input").assertDoesNotExist()
+
+        // Dismissing edit mode returns to passive D-Pad-safe search bar without popping keyboard
+        composeTestRule.onNodeWithTag("schedule_search_input_done").performClick()
+        composeTestRule.waitForIdle()
+
+        composeTestRule.onNodeWithTag("schedule_search_input").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("schedule_search_input_active_field").assertDoesNotExist()
+    }
 }

@@ -10,6 +10,9 @@
     <string name="action_refresh">Refresh</string>
     <string name="action_refreshing">Updating…</string>
     <string name="search_placeholder">Search channels, teams, or sports…</string>
+    <string name="search_clear">Clear search</string>
+    <string name="search_done">Done</string>
+    <string name="search_press_ok_hint">Press OK to search</string>
     <string name="section_featured_live">On Air Now</string>
     <string name="section_favorites">Favorites</string>
     <string name="section_upcoming_events">Upcoming Broadcasts</string>

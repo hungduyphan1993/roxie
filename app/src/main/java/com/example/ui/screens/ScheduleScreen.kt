@@ -25,11 +25,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +45,7 @@ import com.example.data.model.EventStatus
 import com.example.data.model.StreamEvent
 import com.example.ui.PrismUiState
 import com.example.ui.adaptive.AdaptiveLayoutSpec
+import com.example.ui.adaptive.DpadFriendlySearchBar
 import com.example.ui.adaptive.adaptiveInteractiveSurface
 import com.example.ui.theme.StatusIdleAmber
 import com.example.ui.theme.StatusLiveGreen
@@ -162,24 +161,10 @@ fun ScheduleScreen(
         }
 
         item(span = { GridItemSpan(maxLineSpan) }) {
-            OutlinedTextField(
+            DpadFriendlySearchBar(
                 value = uiState.searchQuery,
                 onValueChange = onSearchQueryChange,
-                placeholder = {
-                    Text(
-                        text = stringResource(R.string.search_placeholder),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Filled.Search,
-                        contentDescription = "Search"
-                    )
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier.fillMaxWidth()
+                testTag = "schedule_search_input"
             )
         }
 
